@@ -152,7 +152,7 @@ class BilliardData(Dataset):
         for n in tqdm(range(N)):
 
             # Set initial conditions - position r and angle theta
-            theta = np.random.uniform(low=0, high=2*np.pi)
+            theta = np.random.uniform(low=0, high=np.pi)
             r0 = [np.random.uniform(-0.5,0.5), np.random.uniform(-0.5,0.5)]
             # Generate seq_len steps of the billiard trajectory
             v0 = np.array([np.cos(theta), np.sin(theta)])
@@ -173,7 +173,7 @@ class BilliardData(Dataset):
                             requires_grad=True)
 
 def PrepareData(dirname, a,b,c,d, n_train=100000, n_test=1000,
-                seq_len=2, prefix="", **custom_rf):
+                seq_len=2, prefix="", force_data_generation = True, **custom_rf):
 
     bdy = BeanBoundary(a,b,c,d, **custom_rf)
     if not os.path.exists(dirname):
@@ -183,13 +183,13 @@ def PrepareData(dirname, a,b,c,d, n_train=100000, n_test=1000,
         + str(seq_len) + ".tensor"
     TEST_DATA_FILE = dirname + "/" + prefix + "test_" + param_setting_name + "_seq=" \
         + str(seq_len) + ".tensor"
-    if os.path.exists(TRAIN_DATA_FILE):
+    if os.path.exists(TRAIN_DATA_FILE) or not force_data_generation:
         print("Training data already exists!")
     else:
         print("==================\n # Generating training data:")
         train_data = BilliardData(bdy = bdy, N=n_train, seq_len = seq_len)
         torch.save(train_data, TRAIN_DATA_FILE)
-    if os.path.exists(TEST_DATA_FILE):
+    if os.path.exists(TEST_DATA_FILE) or not force_data_generation:
         print("Testing data already exists!")
     else:
         print("==================\n # Generating testing data:")
